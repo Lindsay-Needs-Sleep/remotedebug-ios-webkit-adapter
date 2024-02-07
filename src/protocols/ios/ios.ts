@@ -606,17 +606,20 @@ export abstract class IOSProtocol extends ProtocolAdapter {
             level: type,
             text: message.text,
             lineNumber: message.line,
-            timestamp: (new Date).getTime(),
+            timestamp: new Date().getTime(),
             url: message.url,
             stackTrace: message.stackTrace ? {
                 callFrames: message.stackTrace
             } : undefined,
             networkRequestId: message.networkRequestId
+            args: message.parameters,
         };
 
-        this._target.fireEventToTools('Log.entryAdded', {
-            entry: consoleMessage
-        });
+        if (type == "error") {
+            this._target.fireEventToTools('Log.entryAdded', { entry:consoleMessage });
+        } else {
+            this._target.fireEventToTools('Runtime.consoleAPICalled', consoleMessage);
+        }
 
         return Promise.resolve(null);
     }
